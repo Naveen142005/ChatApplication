@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KOLAK</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap" rel="stylesheet">
+    <style>
+        /*@font-face {
+            font-family: 'my_font';
+            src: url(/kolak/KOLAK.ttf);
+        }*/
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #2b2222;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-image: linear-gradient(to bottom, #c281c2, #826eb2, #7d8fc2, #8eabc6, #b4c2c9);
+            
+        }
+        
+        .chat-container {
+            width: 90vw;
+            height: 90vh;
+            margin: 10px auto;
+            padding: 20px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chat-box {
+            height: 75%;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #8d8181;
+            border-radius: 5px;
+        }
+        
+        input[type="text"] {
+            
+            width: calc(100% - 70px);
+            padding: 8px;
+            border: 1px solid #525252;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        
+        button {
+            padding: 8px 20px;
+            margin-top: .5rem;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 5px;
+            width: 200px;
+            cursor: pointer;
+            border-radius: 10px;
+            font-weight: 800;
+            padding: 12px;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        .input{
+            margin-top: 12px;
+            display: flex;
+        }
+        .input input[type="text"]:focus {
+            outline: 1px solid #0056b3;
+            outline-color: #0056b3;
+            outline-width: 1.5px;
+            outline-offset: 1px;  
+        }
+        .head{
+            font-size: 20pt;
+            font-family: "Abril Fatface", serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+        .user_1{
+            display: flex;
+            width: 100%;
+            flex-direction: column;
+        }
+        .user{
+            width: fit-content;
+            height: fit-content;
+            border: 1px solid black;
+            padding: 10px;
+            border-radius:10px 10px 0 10px ;
+            box-shadow: 3px 3px gray;
+            align-self: flex-end;
+            margin-bottom: 12px;
+        }
+        .receiver{
+            width: fit-content;
+            height: fit-content;
+            border: 1px solid black;
+            box-shadow: 3px 3px gray;
+            padding: 10px;
+            align-self: flex-start;
+            border-radius:10px 10px 10px 0px ;
+            margin-bottom: 12px;
+        }
+        .span_div{
+            font-size: 12px;
+            margin-right:20px;
+            color: #494343;
+        }
+</style>
+</head>
+
+<body>
+    <h1 style="display: none;"><p id="username"><%= username %></p></h1>
+    <div class="chat-container">
+        <div class="head flex items-center " style="display: flex;">
+            <div>kolak</div>
+        </div>
+
+        <div class="chat-box" id="chatBox" >
+            <div class="user_1">
+            </div>
+            
+        </div>
+        <div class="input">
+            <input type="text" id="messageInput" placeholder="Type your message..."  onkeydown="handleKeyPress(event)">
+            <input type="text" id="receiverInput" placeholder="Receiver's username" style="width: 12rem">
+        </div>
+        <button id="sendButton">Send</button>
+
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const username = document.getElementById('username').textContent;
+        let receiverName; 
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatBox = document.getElementById('chatBox');
+
+            const chat_btn_user = document.querySelector('.user_1');
+            const chat_btn_receiver = document.querySelector('.receiver_1');
+
+
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const receiverInput = document.getElementById('receiverInput');
+
+            messageInput.addEventListener('keypress', function(event) {
+                if (event.keyCode === 13) {
+                    sendButton.click();
+                }
+            });
+            sendButton.addEventListener('click', () => {
+                receiverName = receiverInput.value.trim();
+                const message = messageInput.value.trim();
+
+                
+
+                console.log(message)
+                if (receiverName !== '' && message !== '') {
+                    socket.emit('clientmessage', {to : receiverName , mes :message });
+                    appendMessage_user(message)
+                    messageInput.value = '';
+                }
+            });
+
+            socket.on('servermessage', ({ from, mes }) => {
+                appendMessage_receiver(from , mes);
+            });
+
+            function appendMessage_receiver(from,message) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('receiver');
+                messageElement.classList.add('animate__animated')
+                messageElement.classList.add('animate__slideInUp')
+                messageElement.classList.add('animate__faster')
+                
+                const span = document.createElement('span');
+                span.textContent = from + ': ';
+                span.classList.add('span_div');
+                messageElement.appendChild(span);
+
+                const lineBreak = document.createElement('br');
+                messageElement.appendChild(lineBreak); 
+                
+                const messageNode = document.createTextNode(message);
+                messageElement.appendChild(messageNode);
+                
+                chat_btn_user.appendChild(messageElement);
+                chatBox.scrollTop = chatBox.scrollHeight;
+                
+            }
+
+            function appendMessage_user( message) {
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('user');
+                    messageElement.classList.add('animate__animated')
+                    messageElement.classList.add('animate__slideInUp')
+                    messageElement.classList.add('animate__faster')
+
+                    const span = document.createElement('span');
+                    span.classList.add('span_div');
+                    span.textContent = 'YOU:'; 
+                    messageElement.appendChild(span);
+
+                    const lineBreak = document.createElement('br');
+                    messageElement.appendChild(lineBreak); 
+
+                    const messageNode = document.createTextNode(message);
+                    messageElement.appendChild(messageNode); 
+
+                    chat_btn_user.appendChild(messageElement);
+                    chatBox.scrollTop = chatBox.scrollHeight; 
+            }
+        });
+
+        
+        socket.emit('setUsername', username);
+    </script>
+</body>
+</html>

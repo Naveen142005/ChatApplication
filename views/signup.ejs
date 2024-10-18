@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #070707;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 25vw;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .login-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+       /* .hidden {
+            display: none;
+        }
+        
+        #message {
+            display: flex;
+            justify-content: center;
+            padding-top: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, transform 0.5s ease-in-out;
+            color: green;
+        }
+        
+        #message.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .hidden {
+            display: none;
+        }
+        */
+        #message {
+            display: flex;
+            justify-content: center;
+            padding-top: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, transform 0.5s ease-in-out;
+            color: green; /* Set color to green */
+        }
+        
+        #message.visible {
+            opacity: 1;
+            transform: translateY(0); /* Apply translateY transformation */
+        }
+        
+        #message.transition {
+            cursor: pointer;
+            color: blue;
+            transition: transform 0.5s ease-in-out; /* Apply transition to "Back to login page" text */
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Sign Up</h2>
+
+        <form action="/" method="post" autocomplete="off">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+
+            <input type="submit" value="Sign Up" id="postbtn">
+        </form>
+        <div id="message" class="hidden">Sign up successful!</div>
+    </div>
+
+    <script>
+        const postbtn = document.getElementById('postbtn');
+        let state;
+        postbtn.addEventListener('click',async (e)=>{
+
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const res = await fetch('http://localhost:2702/',{
+                method:'post',
+                headers:{
+                    "content-type":'application/json'
+                },
+                body: JSON.stringify({ username, password }) 
+            })
+            if(res.ok){
+                 state = await res.json()
+                console.log(state);
+            }
+            if(state) addSuccessfully(true);
+            else addSuccessfully(false);
+       }
+       )
+       function addSuccessfully(k){
+        if(k){
+            let message = document.getElementById('message');
+            message.classList.remove('hidden');
+            message.classList.add('visible');
+            setTimeout(function() {
+                message.textContent = 'Back to login page';
+                message.classList.add('visible', 'transition');
+                message.addEventListener('click', function() {
+                    window.location.href = '/';
+                });
+            }, 2000);
+        }
+       }
+    </script>
+</body>
+</html>

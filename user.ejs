@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/static/logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KOLAK</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1 style="display: none;"><p id="username"><%= username %></p></h1>
+    <div class="chat-container">
+        <div class="head flex items-center " style="display: flex;">
+            <div>kolak</div>
+        </div>
+
+        <div class="chat-box" id="chatBox" >
+            <div class="user_1">
+            </div>
+            
+        </div>
+        <div class="input">
+            <input type="text" id="messageInput" placeholder="Type your message..."  onkeydown="handleKeyPress(event)">
+            <input type="text" id="receiverInput" placeholder="Receiver's username" style="width: 12rem">
+        </div>
+        <button id="sendButton">Send</button>
+
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const username = document.getElementById('username').textContent;
+        let receiverName; 
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatBox = document.getElementById('chatBox');
+
+            const chat_btn_user = document.querySelector('.user_1');
+            const chat_btn_receiver = document.querySelector('.receiver_1');
+
+
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const receiverInput = document.getElementById('receiverInput');
+
+            messageInput.addEventListener('keypress', function(event) {
+                if (event.keyCode === 13) {
+                    sendButton.click();
+                }
+            });
+            sendButton.addEventListener('click', () => {
+                receiverName = receiverInput.value.trim();
+                const message = messageInput.value.trim();
+
+                
+
+                console.log(message)
+                if (receiverName !== '' && message !== '') {
+                    socket.emit('clientmessage', {to : receiverName , mes :message });
+                    appendMessage_user(message)
+                    messageInput.value = '';
+                }
+            });
+
+            socket.on('servermessage', ({ from, mes }) => {
+                appendMessage_receiver(from , mes);
+            });
+
+            function appendMessage_receiver(from,message) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('receiver');
+                messageElement.classList.add('animate__animated')
+                messageElement.classList.add('animate__slideInUp')
+                messageElement.classList.add('animate__faster')
+                
+                const span = document.createElement('span');
+                span.textContent = from + ': ';
+                span.classList.add('span_div');
+                messageElement.appendChild(span);
+
+                const lineBreak = document.createElement('br');
+                messageElement.appendChild(lineBreak); 
+                
+                const messageNode = document.createTextNode(message);
+                messageElement.appendChild(messageNode);
+                
+                chat_btn_user.appendChild(messageElement);
+                chatBox.scrollTop = chatBox.scrollHeight;
+                
+            }
+
+            function appendMessage_user( message) {
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('user');
+                    messageElement.classList.add('animate__animated')
+                    messageElement.classList.add('animate__slideInUp')
+                    messageElement.classList.add('animate__faster')
+
+                    const span = document.createElement('span');
+                    span.classList.add('span_div');
+                    span.textContent = 'YOU:'; 
+                    messageElement.appendChild(span);
+
+                    const lineBreak = document.createElement('br');
+                    messageElement.appendChild(lineBreak); 
+
+                    const messageNode = document.createTextNode(message);
+                    messageElement.appendChild(messageNode); 
+
+                    chat_btn_user.appendChild(messageElement);
+                    chatBox.scrollTop = chatBox.scrollHeight; 
+            }
+        });
+
+        
+        socket.emit('setUsername', username);
+    </script>
+</body>
+</html>
